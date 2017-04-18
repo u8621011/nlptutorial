@@ -6,6 +6,7 @@ def TrainBigramModel(ifile, ofile):
     tokenCounts = dict()
     model = dict()
     tokenTotalCount = 0
+    unigramTotalCount = 0
     lines = fin.readlines()
     for curLine in lines:
         line = curLine.strip()
@@ -16,8 +17,13 @@ def TrainBigramModel(ifile, ofile):
         # placeholder of bigram tokens
         tokenWindow = []
         while len(tokens) > 0:
-            tokenTotalCount += 1
             curToken = tokens.pop(0)
+
+            tokenTotalCount += 1
+            # we still dont understand why unigram not include <s> but n-gram include?
+            if curToken != '<s>':
+                unigramTotalCount += 1
+
             tokenWindow.append(curToken)
 
             # calc for unigram
@@ -39,15 +45,16 @@ def TrainBigramModel(ifile, ofile):
         keyTokens = k.split()
         if len(keyTokens) == 1:
             # unigram model properbility
-            model[k] = v / float(tokenTotalCount)
+            if k != '<s>':
+                model[k] = v / float(unigramTotalCount)
         else:
             # bigram model properbility
             tokenHead = keyTokens[0]
             model[k] = float(v) / tokenCounts[tokenHead]
 
-    fout = open('ofile', 'w', encoding='utf8')
+    fout = open(ofile, 'w', encoding='utf8')
     for k, v in model.items():
-        outString = "%s %s" % (k, v)
+        outString = "%s %f" % (k, v)
         print(outString)
         fout.write("%s\n" % outString)
 
@@ -56,6 +63,27 @@ def TrainBigramModel(ifile, ofile):
 
     return tokenCounts
 
+def LoadModel(filename):
+    fin = open(filename, 'r', encoding='utf8')
+    lines = fin.readlines()
+
+    model = dict()
+    for curLine in lines:
+        line = curLine.strip()
+        tokens = line.split()
+
+        popToken = tokens.pop()
+        model[" ".join(tokens)] = float(popToken)
+
+    fin.close()
+
+    return model
+
+
+def DoTest(ifile, ofile):
+    model = LoadModel(ifile)
+    return 
+    
 if len(sys.argv) < 4:
     print("""execute format:
     python a02.py train {input_file} {output_file}
@@ -70,6 +98,6 @@ ofile = sys.argv[3]
 if mode == 'train':
     TrainBigramModel(ifile, ofile)
 elif mode == 'test':
-    doTest()
+    DoTest(ifile, ofile)
 else:
     print('Unknown execution mode')

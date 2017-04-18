@@ -1,4 +1,5 @@
-﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <SchemaVersion>2.0</SchemaVersion>
@@ -24,6 +25,9 @@
   <ItemGroup>
     <Compile Include="a00.py" />
     <Compile Include="a01.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="a02.py">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
