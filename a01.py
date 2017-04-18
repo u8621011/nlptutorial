@@ -1,4 +1,5 @@
 import sys
+import math
 
 def getTokenDict (fin):
     lines = fin.readlines()
@@ -40,8 +41,22 @@ def TrainModel(ifile, ofile):
 
     return model
 
+def LoadModelFile (fmodel):
+    f = open(fmodel, 'r', encoding='utf8')
+    lines = f.readlines()
+
+    model = dict()
+    for curLine in lines:
+        line = curLine.strip()
+        tokens = line.split()
+
+        model[tokens[0]] = float(tokens[1])
+
+    f.close()
+    return model
+
 # return properbility of each lin
-def DoEntropy (model, lines):
+def CalcEntropyAndCoverage (model, lines):
     lamda1 = 0.95
     lamdaUnk = 1 - lamda1
     v = 1000000
@@ -49,8 +64,9 @@ def DoEntropy (model, lines):
     # statistic variables
     totalTokenCount = 0
     unknownCount = 0
-    dictTokenProps = dict()
+    entropy = 0
 
+    print('Calculating Entropy and coeverage')
     # calc token total count
     unkProp = lamdaUnk / v
     for curLine in lines:
@@ -68,19 +84,22 @@ def DoEntropy (model, lines):
             else:
                 unknownCount += 1
 
-            if curToken in dictTokenProps:
-                dictTokenProps[curToken] += tokenProp
-            else:
-                dictTokenProps[curToken] = tokenProp
+            print('prop(%s) = %f, ' % (curToken, tokenProp))
 
+            entropy -= math.log2(tokenProp)            
+
+    coverage = (totalTokenCount-unknownCount) / float(totalTokenCount)
+    entropy = entropy / totalTokenCount
+
+    print("entropy: %f, coverage: %f" % (entropy, coverage))
 
     return {
-        'TotalCount': totalTokenCount,
-        'UnknownCount': unknownCount,
-        'LogLikes': logLikes
+        'Coverage': coverage,
+        'Entropy': entropy
     }
 
 if len(sys.argv) < 4:
+    print("argv: %s" % sys.argv)
     print("""execute format:
     python a01.py train {input_file} {output_file}
     python a01.py test {trained_model_file} {test_file}
@@ -88,12 +107,15 @@ if len(sys.argv) < 4:
     exit(0)
 
 mode = sys.argv[1]
-ifile = sys.argv[2]
-ofile = sys.argv[3]
+file1 = sys.argv[2]
+file2 = sys.argv[3]
 
 if mode == 'train':
-    TrainModel(ifile, ofile)
+    TrainModel(file1, file2)
 elif mode == 'test':
-    doTest()
+    model = LoadModelFile(file1)
+    fTesting = open(file2, 'r', encoding='utf8')
+    lines = fTesting.readlines()
+    CalcEntropyAndCoverage(model, lines)
 else:
     print('Unknown execution mode')
