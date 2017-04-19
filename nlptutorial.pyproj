@@ -30,6 +30,12 @@
     <Compile Include="a02.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="a03.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="helper.py">
+      <SubType>Code</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Interpreter Include="env\">
