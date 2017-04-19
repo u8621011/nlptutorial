@@ -1,5 +1,6 @@
 import sys
 import math
+import helper
 
 def TrainBigramModel(ifile, ofile):
     fin = open(ifile, 'r', encoding='utf8')
@@ -64,22 +65,6 @@ def TrainBigramModel(ifile, ofile):
 
     return tokenCounts
 
-def LoadModel(filename):
-    fin = open(filename, 'r', encoding='utf8')
-    lines = fin.readlines()
-
-    model = dict()
-    for curLine in lines:
-        line = curLine.strip()
-        tokens = line.split()
-
-        popToken = tokens.pop()
-        model[" ".join(tokens)] = float(popToken)
-
-    fin.close()
-
-    return model
-
 def CalcBigramProp (model, filename):
     # entropy calc properties
     v = 1000000
@@ -122,7 +107,7 @@ def CalcBigramProp (model, filename):
     return Entropy
 
 def DoTest(modelFIle, testFile):
-    model = LoadModel(modelFIle)
+    model = helper.LoadModel(modelFIle)
 
     CalcBigramProp(model, testFile)
     return 
