@@ -1,15 +1,39 @@
 import helper
+import sys
+from collections import namedtuple
+
+def buildGraph (model, sentance):
+    slen = len(sentance)
+
+    graph = []
+    for i in range(slen):
+        edges = []
+        # add edge if the partial word can be found in dict
+        for j in range(1, slen):
+            subString = sentance[i:j]
+            if subString in model:
+                p = model[subString]
+                edge = Edge(i, j, p)
+                edges.append(edge)
+                print('appending eage : {}'.format(edge))
+
+        graph.append(edges)
+
+
+    return graph
+                
+    
 
 def doSegmentation (model, line):
-    Edge = namedtuple('Edge', ['StartNode', 'EndNode'])
     sentance = line.strip()
-    tokens = sentance.split()
-    tokenCount = len(tokens)
-    
-    nodeBestScore = [None for i in range(tokenCount+1)]
-    nodeBestEdge = [None for i in range(tokenCount+1)]
+    slen = len(sentance)
 
+    nodeBestScore = [None for i in range(slen+1)]
+    nodeBestEdge = [None for i in range(slen+1)]
 
+    graph = buildGraph(model, line)
+
+    print(graph)
     
 
 def SegmentFile(model, segFile, outFile):
@@ -19,7 +43,7 @@ def SegmentFile(model, segFile, outFile):
     lines = sf.readlines()
     for curLine in lines:
         tokens = doSegmentation (model, curLine)
-        of.write(" ".join(tokens))
+        #of.write(" ".join(tokens))
 
     sf.close()
     of.close()
@@ -45,9 +69,10 @@ elif mode == 'seg':
         """)
         exit(0)
     
-    file3 = sys.args[4]
+    file3 = sys.argv[4]
     model = helper.LoadModel(file1)
 
+    Edge = namedtuple('Edge', ['S', 'E', 'P'])
     SegmentFile(model, file2, file3)
 else:
     print('Unknown execution mode')
