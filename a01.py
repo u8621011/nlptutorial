@@ -1,5 +1,6 @@
 import sys
 import math
+import helper
 
 def getTokenDict (fin):
     lines = fin.readlines()
@@ -23,6 +24,7 @@ def getTokenDict (fin):
     return dictTokens
 
 def TrainModel(ifile, ofile):
+    logger = helper.GetMyLogger('A01', 'myapp.log')
     fin = open(ifile, 'r', encoding='utf8')
 
     d = getTokenDict(fin)
@@ -33,7 +35,8 @@ def TrainModel(ifile, ofile):
 
     for k, v in model.items():
         outString = "%s %s" % (k, v)
-        print(outString)
+        
+        logger.debug(outString)
         fout.write("%s\n" % outString)
 
     fin.close()

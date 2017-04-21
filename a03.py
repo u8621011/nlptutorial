@@ -2,86 +2,91 @@ import helper
 import sys
 import math
 from collections import namedtuple
+from a01 import TrainModel
 
-def buildGraph (model, sentance):
-    print ('Building graph for sentance: {}'.format(sentance))
+class A03:
+    def __init__ (self):
+        self.logger = helper.GetMyLogger('A03', 'myapp.log')
 
-    slen = len(sentance)
+    def buildGraph (self, model, sentance):
+        self.logger.debug ('Building graph for sentance: {}'.format(sentance))
 
-    graph = [None] * slen
-    for i in range(slen):
-        # add first edge (i, i+1)
-        # add edge if the partial word can be found in dict
-        for j in range(i+1, slen):
-            subString = sentance[i:j]
-            print('substring[{}:{}]: {}'.format(i, j, subString))
-            if subString in model:
-                p = model[subString]
-                score = -math.log(p)
-                edge = Edge(i, j, score)
+        slen = len(sentance)
 
-                curEdges = graph[j]
-                if curEdges == None:
-                    graph[j] = [edge]
-                else:
-                    curEdges.append(edge)
+        graph = [None] * slen
+        for i in range(slen):
+            # add first edge (i, i+1)
+            # add edge if the partial word can be found in dict
+            for j in range(i+1, slen):
+                subString = sentance[i:j]
+                self.logger.debug('substring[{}:{}]: {}'.format(i, j, subString))
+                if subString in model:
+                    p = model[subString]
+                    score = -math.log(p)
+                    edge = Edge(i, j, score)
 
-    print('Graph built: {}'.format(graph))
+                    curEdges = graph[j]
+                    if curEdges == None:
+                        graph[j] = [edge]
+                    else:
+                        curEdges.append(edge)
 
-    return graph
+        self.logger.info ('Graph built: {}'.format(graph))
+
+        return graph
                 
-def doViterbiSegmentation (model, line):
-    sentance = line.strip()
-    slen = len(sentance)
+    def doViterbiSegmentation (self, model, line):
+        sentance = line.strip()
+        slen = len(sentance)
 
-    nodeBestScore = [None for i in range(slen+1)]
-    nodeBestEdge = [None for i in range(slen+1)]
+        nodeBestScore = [None for i in range(slen+1)]
+        nodeBestEdge = [None for i in range(slen+1)]
 
-    graph = buildGraph(model, line)
+        graph = self.buildGraph(model, line)
 
-    # forward steps
-    nodeBestScore[0] = 0
-    for i in range(1, slen+1):
-        curNodeIncomingEdges = graph[i]
-        for curEdge in curNodeIncomingEdges:
-            if nodeBestScore[i] == None:
-                nodeBestScore[i] = nodeBestScore[curEdge.S] + curEdge.Score
-                nodeBestEdge[i] = curEdge
-            else:
-                curScore = nodeBestScore[curEdge.S] + curEdge.Score
-                if curScore < nodeBestScore[i]:
-                     nodeBestScore[i] = curScore
-                     nodeBestEdge[i] = curEdge
+        # forward steps
+        nodeBestScore[0] = 0
+        for i in range(1, slen+1):
+            curNodeIncomingEdges = graph[i]
+            for curEdge in curNodeIncomingEdges:
+                if nodeBestScore[i] == None:
+                    nodeBestScore[i] = nodeBestScore[curEdge.S] + curEdge.Score
+                    nodeBestEdge[i] = curEdge
+                else:
+                    curScore = nodeBestScore[curEdge.S] + curEdge.Score
+                    if curScore < nodeBestScore[i]:
+                         nodeBestScore[i] = curScore
+                         nodeBestEdge[i] = curEdge
 
-    print('Best scores: {}'.format(nodeBestScore))
-    print('Best edges: {}'.format(nodeBestEdge))
+        self.logger.debug('Best scores: {}'.format(nodeBestScore))
+        self.logger.debug('Best edges: {}'.format(nodeBestEdge))
 
-    # backward steps
-    bestPath = []
-    curBestEdge = nodeBestEdge[slen]
-    while curBestEdge != None:
-        bestPath.append(curBestEdge)
-        curBestEdge = nodeBestEdge[curBestEdge.S]
+        # backward steps
+        bestPath = []
+        curBestEdge = nodeBestEdge[slen]
+        while curBestEdge != None:
+            bestPath.append(curBestEdge)
+            curBestEdge = nodeBestEdge[curBestEdge.S]
 
-    print('Best Path: {}'.format(bestPath))
-    tokens = []
-    for curEdge in reversed(bestPath):
-        sub = sentance[curEdge.S:curEdge.E]
-        tokens.append(sub)
+        self.logger.debug('Best Path: {}'.format(bestPath))
+        tokens = []
+        for curEdge in reversed(bestPath):
+            sub = sentance[curEdge.S:curEdge.E]
+            tokens.append(sub)
 
-    print('Segment Result: {}'.format(' '.join(tokens)))
+        self.logger.debug('Segment Result: {}'.format(' '.join(tokens)))
 
-def SegmentFile(model, segFile, outFile):
-    sf = open(segFile, 'r', encoding='utf8')
-    of = open(outFile, 'w', encoding='utf8')
+    def SegmentFile(self, model, segFile, outFile):
+        sf = open(segFile, 'r', encoding='utf8')
+        of = open(outFile, 'w', encoding='utf8')
 
-    lines = sf.readlines()
-    for curLine in lines:
-        tokens = doViterbiSegmentation (model, curLine)
-        #of.write(" ".join(tokens))
+        lines = sf.readlines()
+        for curLine in lines:
+            tokens = self.doViterbiSegmentation (model, curLine)
+            #of.write(" ".join(tokens))
 
-    sf.close()
-    of.close()
+        sf.close()
+        of.close()
 
 if len(sys.argv) < 4:
     print("""execute format:
@@ -95,7 +100,8 @@ file1 = sys.argv[2]
 file2 = sys.argv[3]
 
 if mode == 'train':
-    TrainBigramModel(file1, file2)
+    TrainModel(file1, file2)
+
 elif mode == 'seg':
     if len(sys.argv) != 5:
         print("""execute format:
@@ -103,12 +109,13 @@ elif mode == 'seg':
         python a03.py seg {trained_model_file} {segmenting_file} {segment_result_file}
         """)
         exit(0)
-    
+
+    o = A03()
     file3 = sys.argv[4]
     model = helper.LoadModel(file1)
 
     Edge = namedtuple('Edge', ['S', 'E', 'Score'])
-    SegmentFile(model, file2, file3)
+    o.SegmentFile(model, file2, file3)
 else:
     print('Unknown execution mode')
 
