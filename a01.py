@@ -101,24 +101,25 @@ def CalcEntropyAndCoverage (model, lines):
         'Entropy': entropy
     }
 
-if len(sys.argv) < 4:
-    print("argv: %s" % sys.argv)
-    print("""execute format:
-    python a01.py train {input_file} {output_file}
-    python a01.py test {trained_model_file} {test_file}
-    """)
-    exit(0)
+if __name__ == '__main__':
+    if len(sys.argv) < 4:
+        print("argv: %s" % sys.argv)
+        print("""execute format:
+        python a01.py train {input_file} {output_file}
+        python a01.py test {trained_model_file} {test_file}
+        """)
+        exit(0)
 
-mode = sys.argv[1]
-file1 = sys.argv[2]
-file2 = sys.argv[3]
+    mode = sys.argv[1]
+    file1 = sys.argv[2]
+    file2 = sys.argv[3]
 
-if mode == 'train':
-    TrainModel(file1, file2)
-elif mode == 'test':
-    model = LoadModelFile(file1)
-    fTesting = open(file2, 'r', encoding='utf8')
-    lines = fTesting.readlines()
-    CalcEntropyAndCoverage(model, lines)
-else:
-    print('Unknown execution mode')
+    if mode == 'train':
+        TrainModel(file1, file2)
+    elif mode == 'test':
+        model = LoadModelFile(file1)
+        fTesting = open(file2, 'r', encoding='utf8')
+        lines = fTesting.readlines()
+        CalcEntropyAndCoverage(model, lines)
+    else:
+        print('Unknown execution mode')
